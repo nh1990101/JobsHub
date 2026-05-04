@@ -1,0 +1,36 @@
+# 依赖和构建产物
+node_modules/
+build/
+dist/
+.dart_tool/
+
+# 环境变量
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# 日志文件
+*.log
+npm-debug.log*
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+
+# 其他
+*.zip
