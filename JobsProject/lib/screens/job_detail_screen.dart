@@ -87,7 +87,7 @@ class JobDetailScreen extends ConsumerWidget {
                   SizedBox(height: 12.h),
                   _buildDetailRow(strings.ageRange, job.ageRange),
                   SizedBox(height: 12.h),
-                  _buildDetailRow(strings.gender, job.genderRequirement),
+                  _buildDetailRow(strings.gender, strings.getGenderText(job.genderRequirement)),
                 ],
               ),
             ),

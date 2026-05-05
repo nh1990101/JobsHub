@@ -31,7 +31,22 @@ abstract class AppStringsBase {
   String get userManagement;
   String get male;
   String get female;
+  String get genderAll;
   String get privacyContent;
+
+  // 性别翻译辅助方法
+  String getGenderText(String? gender) {
+    switch (gender?.toLowerCase()) {
+      case 'male':
+        return male;
+      case 'female':
+        return female;
+      case 'all':
+        return genderAll;
+      default:
+        return genderAll;
+    }
+  }
 }
 
 class AppStringsZH extends AppStringsBase {
@@ -67,6 +82,7 @@ class AppStringsZH extends AppStringsBase {
   String get userManagement => '用户管理';
   String get male => '男性';
   String get female => '女性';
+  String get genderAll => '不限';
   String get privacyContent => '隐私政策\n\n我们重视您的隐私。本隐私政策说明我们如何收集、使用和保护您的个人信息。\n\n1. 信息收集\n我们收集您在使用本应用时主动提供的信息，包括姓名、邮箱、电话等。\n\n2. 信息使用\n我们使用您的信息来改进服务、发送更新和提供客户支持。\n\n3. 信息保护\n我们采取适当的安全措施保护您的个人信息。\n\n4. 联系我们\n如有任何隐私问题，请联系我们。';
 }
 
@@ -103,6 +119,7 @@ class AppStringsEN extends AppStringsBase {
   String get userManagement => 'User Management';
   String get male => 'Male';
   String get female => 'Female';
+  String get genderAll => 'All';
   String get privacyContent => 'Privacy Policy\n\nWe value your privacy. This privacy policy explains how we collect, use, and protect your personal information.\n\n1. Information Collection\nWe collect information you voluntarily provide when using this application, including name, email, phone, etc.\n\n2. Information Usage\nWe use your information to improve our services, send updates, and provide customer support.\n\n3. Information Protection\nWe take appropriate security measures to protect your personal information.\n\n4. Contact Us\nIf you have any privacy questions, please contact us.';
 }
 
@@ -139,6 +156,7 @@ class AppStringsJA extends AppStringsBase {
   String get userManagement => 'ユーザー管理';
   String get male => '男性';
   String get female => '女性';
+  String get genderAll => '不問';
   String get privacyContent => 'プライバシーポリシー\n\nお客様のプライバシーを大切にしています。本プライバシーポリシーは、個人情報の収集、使用、保護方法について説明しています。\n\n1. 情報の収集\nこのアプリケーションを使用する際に自発的に提供する情報を収集します。名前、メール、電話番号など。\n\n2. 情報の使用\nお客様の情報を使用して、サービスを改善し、更新を送信し、カスタマーサポートを提供します。\n\n3. 情報の保護\nお客様の個人情報を保護するために、適切なセキュリティ対策を講じています。\n\n4. お問い合わせ\nプライバシーに関するご質問がある場合は、お気軽にお問い合わせください。';
 }
 
