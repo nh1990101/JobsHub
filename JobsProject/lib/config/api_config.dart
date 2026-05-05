@@ -3,17 +3,30 @@
 class ApiConfig {
   // ============ 环境配置 ============
 
-  /// 当前环境：development（开发）、production（生产）
-  static const String environment = 'development';
+  /// 当前环境：development（开发）、production（生产）、auto（自动检测）
+  static const String environment = 'auto';
 
-  /// 开发环境 API 地址
+  /// 开发环境 API 地址（本地开发时使用）
   static const String developmentBaseUrl = 'http://localhost:3000/api';
 
-  /// 生产环境 API 地址（ngrok 公网地址）
-  static const String productionBaseUrl = 'https://uninstall-escalate-bakeshop.ngrok-free.dev/api';
+  /// 生产环境 API 地址（使用相对路径，前后端同源）
+  static const String productionBaseUrl = '/api';
 
   /// 根据环境自动选择 API 地址
   static String get baseUrl {
+    if (environment == 'auto') {
+      // 自动检测：如果是通过 localhost 访问，使用开发环境
+      // 否则使用相对路径（生产环境，前后端同源）
+      try {
+        // 在 Web 环境下检测当前 URL
+        if (Uri.base.host == 'localhost' || Uri.base.host == '127.0.0.1') {
+          return developmentBaseUrl;
+        }
+      } catch (e) {
+        // 非 Web 环境或检测失败，使用生产环境
+      }
+      return productionBaseUrl;
+    }
     return environment == 'production' ? productionBaseUrl : developmentBaseUrl;
   }
 
