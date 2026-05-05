@@ -72,13 +72,62 @@ async function withConnection(callback) {
 }
 
 // ============ 中间件 ============
-// CORS配置
+// CORS配置 - 支持ngrok和本地开发
 app.use(cors({
-  origin: '*', // 允许所有来源，生产环境应该限制具体域名
+  origin: function(origin, callback) {
+    // 允许没有origin的请求（如Postman）
+    if (!origin) return callback(null, true);
+
+    // 允许的来源
+    const allowedOrigins = [
+      'http://localhost:54884',
+      'http://localhost:3000',
+      'http://127.0.0.1:54884',
+      'http://127.0.0.1:3000',
+      /^http:\/\/localhost:\d+$/,  // 所有localhost端口
+      /^https:\/\/.*\.ngrok-free\.dev$/,  // ngrok域名
+      /^https:\/\/.*\.ngrok\.io$/,  // ngrok旧域名
+    ];
+
+    // 检查是否匹配
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return origin === allowed;
+      } else if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return false;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('⚠️  CORS blocked origin:', origin);
+      callback(null, true); // 开发环境允许所有来源
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
+
+// 额外的CORS头部
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  // ngrok 跳过浏览器警告页面
+  res.header('ngrok-skip-browser-warning', 'true');
+
+  // 处理预检请求
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // 请求超时中间件
 app.use((req, res, next) => {
@@ -148,7 +197,12 @@ const adminMiddleware = (req, res, next) => {
 
 // ============ 静态文件服务 ============
 const staticPath = path.join(__dirname, '..');
+const flutterWebPath = path.join(__dirname, '..', '..', 'JobsProject', 'build', 'web');
 console.log('📁 静态文件目录:', staticPath);
+console.log('📱 Flutter Web目录:', flutterWebPath);
+
+// Flutter Web 应用 (优先级最高)
+app.use(express.static(flutterWebPath));
 
 // 测试路由
 app.get('/test-static', (req, res) => {
@@ -908,6 +962,17 @@ const runMigrations = async () => {
     }
   }
 };
+
+// ============ SPA Fallback (必须在所有API路由之后) ============
+// 所有非API请求都返回Flutter的index.html，支持前端路由
+app.use((req, res, next) => {
+  // 排除API请求和静态文件
+  if (req.path.startsWith('/api/') || req.path.includes('.')) {
+    return next();
+  }
+  const indexPath = path.join(__dirname, '..', '..', 'JobsProject', 'build', 'web', 'index.html');
+  res.sendFile(indexPath);
+});
 
 // ============ 启动服务器 ============
 const PORT = process.env.PORT || 3000;

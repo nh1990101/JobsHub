@@ -1,16 +1,21 @@
 import 'package:dio/dio.dart';
 import '../models/job.dart';
+import '../config/api_config.dart';
 
 class ApiService {
   late Dio _dio;
-  // Use CORS proxy for development to bypass browser CORS restrictions
-  final String baseUrl = 'http://127.0.0.1:3000/api';
 
   ApiService() {
+    // 打印当前 API 配置
+    ApiConfig.printConfig();
+
     _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      baseUrl: ApiConfig.baseUrl,
+      connectTimeout: Duration(seconds: ApiConfig.connectTimeout),
+      receiveTimeout: Duration(seconds: ApiConfig.receiveTimeout),
+      headers: {
+        'ngrok-skip-browser-warning': '69420',  // 跳过 ngrok 警告页面
+      },
       validateStatus: (status) {
         // 接受所有状态码
         return status != null && status < 500;
@@ -68,7 +73,7 @@ class ApiService {
 
       // 尝试直接请求
       final response = await _dio.get(
-        '/jobs',
+        ApiConfig.jobs,
         queryParameters: params,
       );
 
@@ -124,7 +129,7 @@ class ApiService {
   Future<String> login(String email, String password) async {
     try {
       final response = await _dio.post(
-        '/auth/login',
+        ApiConfig.authLogin,
         data: {'email': email, 'password': password},
       );
       return response.data['token'];
@@ -137,7 +142,7 @@ class ApiService {
   Future<String> register(String email, String password, int age, String gender) async {
     try {
       final response = await _dio.post(
-        '/auth/register',
+        ApiConfig.authRegister,
         data: {
           'email': email,
           'password': password,
@@ -164,7 +169,7 @@ class ApiService {
   }) async {
     try {
       final response = await _dio.post(
-        '/app-users/register',
+        ApiConfig.appUsersRegister,
         data: {
           'device_id': deviceId,
           'name': name,
@@ -186,7 +191,7 @@ class ApiService {
   Future<Map<String, dynamic>> getCountryByIp(String ip) async {
     try {
       final response = await _dio.get(
-        '/geo/country-by-ip',
+        ApiConfig.geoCountryByIp,
         queryParameters: {'ip': ip},
       );
       print('✅ 获取国家信息: ${response.data}');
@@ -200,7 +205,7 @@ class ApiService {
   // 根据设备ID获取用户信息
   Future<Map<String, dynamic>?> getUserByDeviceId(String deviceId) async {
     try {
-      final response = await _dio.get('/app-users/$deviceId');
+      final response = await _dio.get(ApiConfig.appUserByDeviceId(deviceId));
       if (response.statusCode == 200 && response.data != null) {
         print('✅ 获取用户信息: ${response.data}');
         return response.data as Map<String, dynamic>;
@@ -215,7 +220,7 @@ class ApiService {
   // 获取国家列表
   Future<List<Map<String, dynamic>>> getCountries() async {
     try {
-      final response = await _dio.get('/countries');
+      final response = await _dio.get(ApiConfig.countries);
       print('✅ 获取国家列表: ${response.data}');
       return List<Map<String, dynamic>>.from(response.data as List);
     } catch (e) {
@@ -227,7 +232,7 @@ class ApiService {
   // 获取应用用户列表
   Future<List<Map<String, dynamic>>> getAppUsers() async {
     try {
-      final response = await _dio.get('/app-users-list');
+      final response = await _dio.get(ApiConfig.appUsersList);
       print('✅ 获取应用用户列表: ${response.data}');
       return List<Map<String, dynamic>>.from(response.data as List);
     } catch (e) {

@@ -45,13 +45,14 @@ class Job {
       genderRequirement,
       weight,
       countryId,
+      whatsappPhone,
     } = jobData;
 
     const [result] = await pool.query(
       `INSERT INTO jobs
-       (title, description, requirements, company_name, company_logo, location, salary, age_range, gender_requirement, weight, country_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, description, requirements, companyName, companyLogo, location, salary, ageRange, genderRequirement, weight, countryId]
+       (title, description, requirements, company_name, company_logo, location, salary, age_range, gender_requirement, weight, country_id, whatsapp_phone)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description, requirements, companyName, companyLogo, location, salary, ageRange, genderRequirement, weight, countryId, whatsappPhone]
     );
 
     return result.insertId;
