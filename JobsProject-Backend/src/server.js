@@ -242,6 +242,30 @@ app.get('/api/test-route', (req, res) => {
   res.json({ message: 'Test route works' });
 });
 
+// ============ 辅助函数 ============
+
+// 将数据库字段名（snake_case）转换为前端字段名（camelCase）
+const convertJobToFrontend = (job) => {
+  if (!job) return null;
+  return {
+    id: job.id,
+    title: job.title,
+    description: job.description,
+    requirements: job.requirements,
+    companyName: job.company_name,
+    companyLogo: job.company_logo,
+    location: job.location,
+    salary: job.salary,
+    ageRange: job.age_range,
+    genderRequirement: job.gender_requirement,
+    weight: job.weight,
+    countryId: job.country_id,
+    whatsappPhone: job.whatsapp_phone,
+    createdAt: job.created_at,
+    updatedAt: job.updated_at,
+  };
+};
+
 // ============ 认证路由 ============
 
 // 用户注册
@@ -502,7 +526,7 @@ app.get('/api/jobs', async (req, res) => {
     connection.release();
 
     res.json({
-      data: jobs,
+      data: jobs.map(convertJobToFrontend),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -530,7 +554,7 @@ app.get('/api/jobs/:id', async (req, res) => {
       return res.status(404).json({ error: '职位不存在' });
     }
 
-    res.json(jobs[0]);
+    res.json(convertJobToFrontend(jobs[0]));
   } catch (error) {
     console.error('Get job error:', error);
     res.status(500).json({ error: '获取职位详情失败' });
@@ -948,9 +972,37 @@ const runMigrations = async () => {
   try {
     const connection = await pool.getConnection();
 
-    await connection.query(
-      'ALTER TABLE jobs MODIFY company_logo LONGTEXT'
-    );
+    // 迁移1: 修改 company_logo 字段类型
+    try {
+      await connection.query(
+        'ALTER TABLE jobs MODIFY company_logo LONGTEXT'
+      );
+      console.log('✅ 迁移1: company_logo 字段已更新');
+    } catch (error) {
+      if (error.code === 'ER_DUP_FIELDNAME' || error.message.includes('Duplicate column')) {
+        console.log('⚠️  迁移1: company_logo 字段已存在');
+      }
+    }
+
+    // 迁移2: 添加 whatsapp_phone 字段
+    try {
+      await connection.query(
+        'ALTER TABLE jobs ADD COLUMN whatsapp_phone VARCHAR(50) AFTER country_id'
+      );
+      console.log('✅ 迁移2: whatsapp_phone 字段已添加');
+
+      // 为现有职位添加默认 WhatsApp 号码（示例）
+      await connection.query(
+        "UPDATE jobs SET whatsapp_phone = '+8613800138000' WHERE whatsapp_phone IS NULL"
+      );
+      console.log('✅ 已为现有职位添加默认 WhatsApp 号码');
+    } catch (error) {
+      if (error.code === 'ER_DUP_FIELDNAME' || error.message.includes('Duplicate column')) {
+        console.log('⚠️  迁移2: whatsapp_phone 字段已存在');
+      } else {
+        throw error;
+      }
+    }
 
     connection.release();
     console.log('✅ 数据库迁移完成');
