@@ -245,6 +245,7 @@ app.get('/api/test-route', (req, res) => {
 // ============ 辅助函数 ============
 
 // 将数据库字段名（snake_case）转换为前端字段名（camelCase）
+// 同时保留原始字段名以兼容后台管理页面
 const convertJobToFrontend = (job) => {
   if (!job) return null;
   return {
@@ -253,16 +254,24 @@ const convertJobToFrontend = (job) => {
     description: job.description,
     requirements: job.requirements,
     companyName: job.company_name,
+    company_name: job.company_name,  // 兼容后台
     companyLogo: job.company_logo,
+    company_logo: job.company_logo,  // 兼容后台
     location: job.location,
     salary: job.salary,
     ageRange: job.age_range,
+    age_range: job.age_range,  // 兼容后台
     genderRequirement: job.gender_requirement,
+    gender_requirement: job.gender_requirement,  // 兼容后台
     weight: job.weight,
     countryId: job.country_id,
+    country_id: job.country_id,  // 兼容后台
     whatsappPhone: job.whatsapp_phone,
+    whatsapp_phone: job.whatsapp_phone,  // 兼容后台
     createdAt: job.created_at,
+    created_at: job.created_at,  // 兼容后台
     updatedAt: job.updated_at,
+    updated_at: job.updated_at,  // 兼容后台
   };
 };
 
