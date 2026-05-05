@@ -573,12 +573,12 @@ app.get('/api/jobs/:id', async (req, res) => {
 // 创建职位
 app.post('/api/jobs', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { title, description, country_id, gender_requirement, weight, company_name, requirements, location, salary, age_range, company_logo } = req.body;
+    const { title, description, country_id, gender_requirement, weight, company_name, requirements, location, salary, age_range, company_logo, whatsapp_phone } = req.body;
     const connection = await pool.getConnection();
 
     await connection.query(
-      'INSERT INTO jobs (title, description, country_id, gender_requirement, weight, company_name, requirements, location, salary, age_range, company_logo, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
-      [title, description, country_id, gender_requirement || 'all', weight || 0, company_name, requirements, location, salary, age_range, company_logo]
+      'INSERT INTO jobs (title, description, country_id, gender_requirement, weight, company_name, requirements, location, salary, age_range, company_logo, whatsapp_phone, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+      [title, description, country_id, gender_requirement || 'all', weight || 0, company_name, requirements, location, salary, age_range, company_logo, whatsapp_phone]
     );
 
     connection.release();
@@ -593,12 +593,12 @@ app.post('/api/jobs', authMiddleware, adminMiddleware, async (req, res) => {
 app.put('/api/jobs/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, country_id, gender_requirement, weight, company_name, requirements, location, salary, age_range, company_logo } = req.body;
+    const { title, description, country_id, gender_requirement, weight, company_name, requirements, location, salary, age_range, company_logo, whatsapp_phone } = req.body;
     const connection = await pool.getConnection();
 
     await connection.query(
-      'UPDATE jobs SET title=?, description=?, country_id=?, gender_requirement=?, weight=?, company_name=?, requirements=?, location=?, salary=?, age_range=?, company_logo=?, updated_at=NOW() WHERE id=?',
-      [title, description, country_id, gender_requirement || 'all', weight || 0, company_name, requirements, location, salary, age_range, company_logo, id]
+      'UPDATE jobs SET title=?, description=?, country_id=?, gender_requirement=?, weight=?, company_name=?, requirements=?, location=?, salary=?, age_range=?, company_logo=?, whatsapp_phone=?, updated_at=NOW() WHERE id=?',
+      [title, description, country_id, gender_requirement || 'all', weight || 0, company_name, requirements, location, salary, age_range, company_logo, whatsapp_phone, id]
     );
 
     connection.release();
