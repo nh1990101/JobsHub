@@ -770,6 +770,11 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label>WhatsApp 号码</label>
+                    <input type="text" id="jobWhatsapp" placeholder="例如: +8613800138000">
+                    <small style="color: #999; font-size: 12px;">可选，格式：+[国家代码][手机号]</small>
+                </div>
+                <div class="form-group">
                     <label>公司 Logo</label>
                     <div style="display: flex; gap: 10px; align-items: flex-start;">
                         <div style="flex: 1;">
@@ -1265,6 +1270,7 @@
                 document.getElementById('jobAgeRange').value = job.age_range;
                 document.getElementById('jobGender').value = job.gender_requirement;
                 document.getElementById('jobWeight').value = job.weight;
+                document.getElementById('jobWhatsapp').value = job.whatsapp_phone || '';
 
                 const select = document.getElementById('jobCountry');
                 select.innerHTML = '<option value="">选择国家</option>' +
@@ -1321,7 +1327,8 @@
                 gender_requirement: document.getElementById('jobGender').value,
                 weight: parseInt(document.getElementById('jobWeight').value),
                 country_id: parseInt(document.getElementById('jobCountry').value),
-                company_logo: logoUrl
+                company_logo: logoUrl,
+                whatsapp_phone: document.getElementById('jobWhatsapp').value || null
             };
 
             try {

@@ -72,60 +72,44 @@ async function withConnection(callback) {
 }
 
 // ============ 中间件 ============
-// CORS配置 - 支持ngrok和本地开发
-app.use(cors({
-  origin: function(origin, callback) {
-    // 允许没有origin的请求（如Postman）
-    if (!origin) return callback(null, true);
-
-    // 允许的来源
-    const allowedOrigins = [
-      'http://localhost:54884',
-      'http://localhost:3000',
-      'http://127.0.0.1:54884',
-      'http://127.0.0.1:3000',
-      /^http:\/\/localhost:\d+$/,  // 所有localhost端口
-      /^https:\/\/.*\.ngrok-free\.dev$/,  // ngrok域名
-      /^https:\/\/.*\.ngrok\.io$/,  // ngrok旧域名
-    ];
-
-    // 检查是否匹配
-    const isAllowed = allowedOrigins.some(allowed => {
-      if (typeof allowed === 'string') {
-        return origin === allowed;
-      } else if (allowed instanceof RegExp) {
-        return allowed.test(origin);
-      }
-      return false;
-    });
-
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.log('⚠️  CORS blocked origin:', origin);
-      callback(null, true); // 开发环境允许所有来源
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true,
-  optionsSuccessStatus: 200
-}));
-
-// 额外的CORS头部
+// 手动CORS配置 - 完全控制
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
 
-  // ngrok 跳过浏览器警告页面
+  // 允许的来源
+  const allowedOrigins = [
+    'http://localhost:54884',
+    'http://localhost:3000',
+    'http://127.0.0.1:54884',
+    'http://127.0.0.1:3000',
+  ];
+
+  // 检查origin是否匹配正则
+  const isLocalhost = origin && /^http:\/\/localhost:\d+$/.test(origin);
+  const is127 = origin && /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+  const isNgrok = origin && /^https:\/\/.*\.ngrok-free\.dev$/.test(origin);
+  const isCloudflare = origin && /^https:\/\/.*\.trycloudflare\.com$/.test(origin);
+
+  if (origin && (allowedOrigins.includes(origin) || isLocalhost || is127 || isNgrok || isCloudflare)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    res.header('Access-Control-Allow-Origin', '*');
+  } else {
+    console.log('⚠️  CORS origin:', origin);
+    res.header('Access-Control-Allow-Origin', origin); // 开发环境允许所有
+  }
+
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Expose-Headers', 'ngrok-skip-browser-warning');
   res.header('ngrok-skip-browser-warning', 'true');
 
   // 处理预检请求
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
+
   next();
 });
 

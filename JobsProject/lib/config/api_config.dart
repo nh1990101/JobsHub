@@ -9,21 +9,28 @@ class ApiConfig {
   /// 开发环境 API 地址（本地开发时使用）
   static const String developmentBaseUrl = 'http://localhost:3000/api';
 
-  /// 生产环境 API 地址（使用相对路径，前后端同源）
-  static const String productionBaseUrl = '/api';
+  /// 生产环境 API 地址（ngrok公网地址）
+  static const String productionBaseUrl = 'https://pubs-closure-near-ranch.trycloudflare.com/api';
+
+  /// Web 环境生产地址（使用相对路径，前后端同源）
+  static const String webProductionBaseUrl = '/api';
 
   /// 根据环境自动选择 API 地址
   static String get baseUrl {
     if (environment == 'auto') {
       // 自动检测：如果是通过 localhost 访问，使用开发环境
-      // 否则使用相对路径（生产环境，前后端同源）
+      // 否则根据平台选择合适的生产环境地址
       try {
         // 在 Web 环境下检测当前 URL
         if (Uri.base.host == 'localhost' || Uri.base.host == '127.0.0.1') {
           return developmentBaseUrl;
         }
+        // Web 平台使用相对路径
+        if (Uri.base.scheme == 'http' || Uri.base.scheme == 'https') {
+          return webProductionBaseUrl;
+        }
       } catch (e) {
-        // 非 Web 环境或检测失败，使用生产环境
+        // 非 Web 环境（Android/iOS），使用完整的服务器地址
       }
       return productionBaseUrl;
     }

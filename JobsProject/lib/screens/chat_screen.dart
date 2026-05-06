@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:html' as html;
 import '../config/app_colors.dart';
 import '../providers/language_provider.dart';
 import '../models/chat_message.dart';
@@ -63,16 +62,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final whatsappUrl = 'https://wa.me/$phone?text=${Uri.encodeComponent(message)}';
 
     try {
-      // 在浏览器中使用 window.open
-      html.window.open(whatsappUrl, '_blank');
+      // 使用 url_launcher 打开 WhatsApp 链接（支持所有平台）
+      final uri = Uri.parse(whatsappUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Opening WhatsApp for ${widget.job.companyName}...'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Opening WhatsApp for ${widget.job.companyName}...'),
+              backgroundColor: AppColors.primary,
+            ),
+          );
+        }
+      } else {
+        throw 'Could not launch WhatsApp';
       }
     } catch (e) {
       if (context.mounted) {
